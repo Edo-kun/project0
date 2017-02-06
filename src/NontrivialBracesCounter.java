@@ -25,37 +25,50 @@ public class NontrivialBracesCounter {
         for(int i = 0; i<program.length(); i++) {
             current = program.charAt(i);
 
-            // line comment
-            if (current == '/' && before =='/' && reading) {
-                reading = false;
-                ending = "\n";
-            }
+            // check for comments and strings
+            if (reading) {
+                // line comment
+                if (current == '/' && before =='/') {
+                    reading = false;
+                    ending = "\n";
+                }
 
-            // "String"
-            if (current == '\"' && reading) {
-                reading = false;
-                ending = "\"";
-            }
+                // "String" and 'char'
+                else if (current == '\"') {
+                    reading = false;
+                    ending = "\"";
+                }
+                else if (current == '\'') {
+                    reading = false;
+                    ending = "'";
+                }
 
-            //multiline
-            if (current == '*' && before =='/' && reading) {
-                reading = false;
-                ending = "*/";
-            }
-            if (!reading){
-                switch (ending.length()) {
-                    case 1:
-                        if (current == ending.charAt(0)) {reading = true;}
-                        break;
-                    case 2:
-                        if (before == ending.charAt(0) && current == ending.charAt(1)) {
-                            reading = true;
-                        }
-                        break;
+                //multiline
+                else if (current == '*' && before =='/') {
+                    reading = false;
+                    ending = "*/";
                 }
             }
+            // find terminating characters
+            else {
+                // skip escape characters
+                if (current == '\\') i++;
+                    switch (ending.length()) {
+                        case 1: // strings and char
+                            if (current == ending.charAt(0)) {
+                                reading = true;
+                            }
+                            break;
+                        case 2: // comments
+                            if (before == ending.charAt(0) && current == ending.charAt(1)) {
+                                reading = true;
+                            }
+                            break;
+                    }
+            }
 
-            if (current=='{' && reading){
+            // add brace if looking for one
+            if (reading && current=='{' ) {
                 count++;
             }
             before = current;
@@ -64,14 +77,17 @@ public class NontrivialBracesCounter {
     }
 
     public static void main(String args[]) {
-        String contents;
+        String contents1;
+        String contents2;
         try {
-            contents = new Scanner(new File("src/NontrivialBracesCounter.java")).useDelimiter("\\Z").next();
+            contents1 = new Scanner(new File("src/NontrivialBracesCounter.java")).useDelimiter("\\Z").next();
+            contents2 = new Scanner(new File("src/HelloWorld.java")).useDelimiter("\\Z").next();
         } catch(FileNotFoundException e) {
             System.out.println(e.getMessage());
             return;
         }
         NontrivialBracesCounter bracesCounter = new NontrivialBracesCounter();
-        System.out.println("Left braces in this file: " + bracesCounter.getNumNontrivialLeftBraces(contents));
+        System.out.println("Left braces in this file: " + bracesCounter.getNumNontrivialLeftBraces(contents1));
+        System.out.println("Left braces in HelloWorld file: " + bracesCounter.getNumNontrivialLeftBraces(contents2));
     }
 }
