@@ -8,72 +8,72 @@ import java.util.Scanner;
 public class NontrivialBracesCounter {
     public int getNumNontrivialLeftBraces(String program)  {
         //number of left braces
-        int count = 0;
+        int numberOfLeftBraces = 0;
 
         //before char pointer
-        char before = 0;
+        char previousChar = 0;
 
-        //current char pointer
-        char current = 0;
+        //currentChar char pointer
+        char currentChar = 0;
 
         // toggle if reading for braces
-        boolean reading = true;
+        boolean acceptBraces = true;
 
         // ending string to flag reading
         String ending = "";
 
         for(int i = 0; i<program.length(); i++) {
-            current = program.charAt(i);
+            currentChar = program.charAt(i);
 
             // check for comments and strings
-            if (reading) {
+            if (acceptBraces) {
                 // line comment
-                if (current == '/' && before =='/') {
-                    reading = false;
+                if (currentChar == '/' && previousChar =='/') {
+                    acceptBraces = false;
                     ending = "\n";
                 }
 
                 // "String" and 'char'
-                else if (current == '\"') {
-                    reading = false;
+                else if (currentChar == '\"') {
+                    acceptBraces = false;
                     ending = "\"";
                 }
-                else if (current == '\'') {
-                    reading = false;
+                else if (currentChar == '\'') {
+                    acceptBraces = false;
                     ending = "'";
                 }
 
-                //multiline
-                else if (current == '*' && before =='/') {
-                    reading = false;
+                //multiline comment
+                else if (currentChar == '*' && previousChar =='/') {
+                    acceptBraces = false;
                     ending = "*/";
                 }
             }
             // find terminating characters
             else {
                 // skip escape characters
-                if (current == '\\') i++;
+                if (currentChar == '\\') i++;
                     switch (ending.length()) {
                         case 1: // strings and char
-                            if (current == ending.charAt(0)) {
-                                reading = true;
+                            if (currentChar == ending.charAt(0)) {
+                                acceptBraces = true;
                             }
                             break;
                         case 2: // comments
-                            if (before == ending.charAt(0) && current == ending.charAt(1)) {
-                                reading = true;
+                            if (previousChar == ending.charAt(0) && currentChar == ending.charAt(1)) {
+                                acceptBraces = true;
                             }
                             break;
                     }
             }
 
             // add brace if looking for one
-            if (reading && current=='{' ) {
-                count++;
+            if (acceptBraces && currentChar=='{' ) {
+                numberOfLeftBraces++;
             }
-            before = current;
+            previousChar = currentChar;
         }
-        return count;
+        return numberOfLeftBraces;
     }
 
     public static void main(String args[]) {
