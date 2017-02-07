@@ -3,76 +3,78 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 /**
+ * NontrivialBracesCounter.java
  * Counts nontrivial left braces
+ * Ed Zhou, Jacob Adamson, CP Majgaard
  */
 public class NontrivialBracesCounter {
-    public int getNumNontrivialLeftBraces(String program)  {
+    public static int getNumNontrivialLeftBraces(String program) {
         //number of left braces
         int numberOfLeftBraces = 0;
 
         //before char pointer
-        char previousChar = 0;
+        char previousChar;
 
         //currentChar char pointer
-        char currentChar = 0;
+        char currentChar;
 
-        // toggle if reading for braces
-        boolean acceptBraces = true;
+        int i = 1;
 
-        // ending string to flag reading
-        String ending = "";
-
-        for(int i = 0; i<program.length(); i++) {
+        //Until the last character of the program
+        while (i < program.length()) {
+            previousChar = program.charAt(i - 1);
             currentChar = program.charAt(i);
 
-            // check for comments and strings
-            if (acceptBraces) {
-                // line comment
-                if (currentChar == '/' && previousChar =='/') {
-                    acceptBraces = false;
-                    ending = "\n";
-                }
-
-                // "String" and 'char'
-                else if (currentChar == '\"') {
-                    acceptBraces = false;
-                    ending = "\"";
-                }
-                else if (currentChar == '\'') {
-                    acceptBraces = false;
-                    ending = "'";
-                }
-
-                //multiline comment
-                else if (currentChar == '*' && previousChar =='/') {
-                    acceptBraces = false;
-                    ending = "*/";
+            //Catching Single line comment beginnings
+            if (previousChar == '/' && currentChar == '/') {
+                //Until the line ends
+                while (currentChar != '\n' && ++i < program.length()) {
+                    currentChar = program.charAt(i);
                 }
             }
-            // find terminating characters
-            else {
-                // skip escape characters
-                if (currentChar == '\\') i++;
-                    switch (ending.length()) {
-                        case 1: // strings and char
-                            if (currentChar == ending.charAt(0)) {
-                                acceptBraces = true;
-                            }
-                            break;
-                        case 2: // comments
-                            if (previousChar == ending.charAt(0) && currentChar == ending.charAt(1)) {
-                                acceptBraces = true;
-                            }
-                            break;
-                    }
-            }
+            //Catching Multiline comments beginnings
+            else if (previousChar == '/' && currentChar == '*') {
+                //Incrementing by 2 indices to avoid seeing /*/ as a complete multiline
+                if (i + 2 >= program.length()) break;
+                i += 2;
+                previousChar = program.charAt(i - 1);
+                currentChar = program.charAt(i);
 
-            // add brace if looking for one
-            if (acceptBraces && currentChar=='{' ) {
+                //Until we see the terminator
+                while (!(previousChar == '*' && currentChar == '/')
+                        && ++i < program.length()) {
+                    previousChar = program.charAt(i - 1);
+                    currentChar = program.charAt(i);
+                }
+            }
+            //Catching single quotes
+            else if (currentChar == '\'') {
+                if (++i >= program.length()) break;
+                //Incrementing once to avoid looking at the same character twice
+                currentChar = program.charAt(i);
+                //Until we see the matching quote
+                while (currentChar != '\'' && ++i < program.length()) {
+                    currentChar = program.charAt(i);
+                }
+            }
+            //Catching double quotes
+            else if (currentChar == '\"') {
+                if (++i >= program.length()) break;
+                //Incrementing once to avoid looking at the same character twice
+                currentChar = program.charAt(i);
+                //Until we see the matching quote
+                while (currentChar != '\"' && ++i < program.length()) {
+                    currentChar = program.charAt(i);
+                }
+            }
+            //If we find a nontrivial brace
+            else if (currentChar == '{') {
                 numberOfLeftBraces++;
             }
-            previousChar = currentChar;
+
+            i++;
         }
+
         return numberOfLeftBraces;
     }
 
@@ -80,14 +82,18 @@ public class NontrivialBracesCounter {
         String contents1;
         String contents2;
         try {
-            contents1 = new Scanner(new File("src/NontrivialBracesCounter.java")).useDelimiter("\\Z").next();
-            contents2 = new Scanner(new File("src/HelloWorld.java")).useDelimiter("\\Z").next();
+            contents1 = new Scanner(new File("src/NontrivialBracesCounter.java"))
+                    .useDelimiter("\\Z").next();
+            contents2 = new Scanner(new File("src/NontrivialBracesCounterTest.java"))
+                    .useDelimiter("\\Z").next();
         } catch(FileNotFoundException e) {
             System.out.println(e.getMessage());
             return;
         }
         NontrivialBracesCounter bracesCounter = new NontrivialBracesCounter();
-        System.out.println("Left braces in this file: " + bracesCounter.getNumNontrivialLeftBraces(contents1));
-        System.out.println("Left braces in HelloWorld file: " + bracesCounter.getNumNontrivialLeftBraces(contents2));
+        System.out.println("Left braces in this file: " +
+                bracesCounter.getNumNontrivialLeftBraces(contents1));
+        System.out.println("Left braces in Test file: " +
+                bracesCounter.getNumNontrivialLeftBraces(contents2));
     }
 }
